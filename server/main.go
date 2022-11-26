@@ -6,6 +6,7 @@ import (
 
 	appproto "github.com/Xanvial/tutorial-grpc/proto"
 	"github.com/Xanvial/tutorial-grpc/server/handler"
+	"github.com/Xanvial/tutorial-grpc/server/interceptor"
 	"github.com/Xanvial/tutorial-grpc/server/usecase"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -22,9 +23,18 @@ func main() {
 
 	// put grpc class initialization and interceptor here
 	productHandler := handler.NewProductHandler(productData)
+	grpcInterceptor := interceptor.NewGRPCInterceptor()
 	log.Println("productHandler:", productHandler) // just to avoid compile error, remove this after implementing other codes
 
-	grpcServer := grpc.NewServer()
+	// grpc unary interceptors, will be executed from first element to the last
+	unaryInterceptors := []grpc.UnaryServerInterceptor{
+		grpcInterceptor.LoggingInterceptor(),
+		grpcInterceptor.MetadataInterceptor(),
+	}
+
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(unaryInterceptors...),
+	)
 
 	// register server using reflection
 	reflection.Register(grpcServer)
