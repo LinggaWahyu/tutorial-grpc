@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 
+	appproto "github.com/Xanvial/tutorial-grpc/proto"
 	"github.com/Xanvial/tutorial-grpc/server/handler"
 	"github.com/Xanvial/tutorial-grpc/server/usecase"
 	"google.golang.org/grpc"
@@ -27,6 +28,8 @@ func main() {
 
 	// register server using reflection
 	reflection.Register(grpcServer)
+
+	appproto.RegisterProductServiceServer(grpcServer, productHandler)
 
 	log.Println("start listening on port: 9000")
 	if err := grpcServer.Serve(lis); err != nil {
